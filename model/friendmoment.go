@@ -25,8 +25,9 @@ type Comment struct {
 	RelationID int    `gorm:"not null"` //是否回复。回复谁
 }
 
-//// Goods评论结构体
-//type Goods struct {
-//	gorm.Model
-//	UserID
-//}
+// Goods点赞结构体
+type Goods struct {
+	gorm.Model
+	UserID   uint `gorm:"not null;index"`
+	MomentID uint `gorm:"not null;index"`
+}

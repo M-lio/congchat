@@ -20,4 +20,10 @@ func initMomentsRoute(r *gin.Engine) {
 
 	//查看朋友圈的路由8
 	r.GET("/get-moments", middleware.AuthMiddleware(controllers.GetMomentHandler))
+
+	//点赞朋友圈9
+	r.POST("/goods", controllers.GoodsMoment)
+
+	//取消点赞朋友圈10
+	r.DELETE("/goods", controllers.CancelGoodsMoment)
 }
