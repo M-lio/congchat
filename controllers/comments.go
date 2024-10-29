@@ -14,7 +14,7 @@ func ComentHandler(c *gin.Context) {
 		return
 	}
 
-	result := db.Db.Create(&model.Comment{})
+	result := db.Db.Create(&model.Comment{MomentID: comment.MomentID, UserID: comment.UserID, Contents: comment.Contents, RelationID: comment.RelationID})
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Comment create failed"})
 		return
@@ -40,14 +40,14 @@ func DeleteComentHandler(c *gin.Context) {
 		return
 	}
 
-	result := db.Db.Delete(&model.Comment{}, id)
+	result := db.Db.Delete(&model.Comment{MomentID: comment.MomentID, UserID: comment.UserID, Contents: comment.Contents, RelationID: comment.RelationID}, id)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete comment"})
 		return
 	}
 
 	//更新Moment的Comments数量
-	moment := model.Moment{}
+	var moment model.Moment
 	if err := db.Db.First(&moment, comment.MomentID).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to find moment"})
 		return
