@@ -21,6 +21,7 @@ func InitDB() {
 	err = Db.AutoMigrate(&model.User{})
 	err = Db.AutoMigrate(&model.Moment{})
 	err = Db.AutoMigrate(&model.Goods{})
+	err = Db.AutoMigrate(&model.Comment{})
 	if err != nil {
 		panic(err)
 	}
