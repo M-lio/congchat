@@ -8,7 +8,7 @@ import (
 )
 
 // GoodsMoment 为指定用户给指定动态点赞
-func GoodsMoment(c *gin.Context) {
+func GoodsMomentHandler(c *gin.Context) {
 	var request struct {
 		UserID   uint `json:"user_id"`
 		MomentID uint `json:"moment_id"`
@@ -55,7 +55,7 @@ func GoodsMoment(c *gin.Context) {
 }
 
 // CancelGoodsMoment 取消指定用户对指定动态的点赞
-func CancelGoodsMoment(c *gin.Context) {
+func CancelGoodsMomentHandler(c *gin.Context) {
 	var request struct {
 		UserID   uint `json:"user_id"`
 		MomentID uint `json:"moment_id"`
