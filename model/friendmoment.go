@@ -19,7 +19,7 @@ type Moment struct {
 // comment评论结构体
 type Comment struct {
 	gorm.Model
-	MomentID   int    `gorm:"not null"`
+	MomentID   uint   `gorm:"not null"`
 	UserID     uint   `gorm:"not null"`
 	Contents   string `gorm:"not null"`
 	RelationID int    `gorm:"not null"` //是否回复。回复谁

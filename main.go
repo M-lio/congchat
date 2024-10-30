@@ -3,10 +3,8 @@ package main
 import (
 	"congchat-user/core"
 	"congchat-user/db"
-	"congchat-user/model"
 	"congchat-user/route"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"log"
 )
 
@@ -15,29 +13,6 @@ import (
 //	RoleUser  = "user"
 //	RoleAdmin = "admin"
 //)
-
-type Usertranfs struct {
-	gorm.Model
-	model.User
-	tranfs
-}
-
-type tranfs struct {
-	In      int
-	Pay     int
-	balance int
-}
-
-type record struct {
-	zhanji string
-	detail string
-	bei    string
-}
-
-type UserRecord struct {
-	Usertranfs
-	record
-}
 
 func main() {
 	db.InitDB()        // 初始化数据库连接
