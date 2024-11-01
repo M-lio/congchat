@@ -25,5 +25,4 @@ func InitDB() {
 	if err != nil {
 		panic(err)
 	}
-
 }

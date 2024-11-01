@@ -1,14 +1,43 @@
 package controllers
 
 import (
+	"congchat-user/core"
 	"congchat-user/db"
 	"congchat-user/model"
+	"congchat-user/service"
+	"congchat-user/service/dto"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"gorm.io/gorm"
 	"net/http"
 )
+
+type SysComment struct {
+	core.Api
+}
+
+//func (e SysMenu) GetPage(c *gin.Context) {
+//	s := service.SysMenu{}  		生成服务实例（service）
+//	req := dto.SysMenuGetPageReq{}	生成请求实例（请求在dto）
+//	err := e.MakeContext(c).		设置上下文
+//		MakeOrm().					生成DB
+//		Bind(&req, binding.Form).	绑参校验
+//		MakeService(&s.Service).	生成指定服务
+//		Errors						错误记录
+//	if err != nil {					看看执行中有没有错
+//		e.Logger.Error(err)
+//		e.Error(500, err, err.Error())
+//		return
+//	}
+//	var list = make([]models.SysMenu, 0) 执行中用列表记录错误信息
+//	err = s.GetPage(&req, &list).Error
+//	if err != nil {
+//		e.Error(500, err, "查询失败")
+//		return
+//	}
+//	e.OK(list, "查询成功")				返回
+//}
 
 type DeleteCommentResponse struct {
 	Comments []model.Comment `json:"comments"`
@@ -18,14 +47,28 @@ type GetCommentsResponse struct {
 	Comments []model.Comment `json:"comments"`
 }
 
-type CreateCommentRequest struct {
-	Contents string `json:"contents" binding:"required,min=1,max=255"` // 假设内容至少1个字符，最多255个字符
-	UserID   uint   `json:"user_id" binding:"required"`                // 用户ID必填
-	MomentID uint   `json:"moment_id" binding:"required"`              // 动态ID必填
+func (e SysComment) Insert(c *gin.Context) {
+	req := dto.CreateCommentRequest{}
+	var rsp core.Rsp
+	s := new(service.SysComment)
+	if err := c.ShouldBindWith(&req, binding.JSON); err != nil {
+		// 使用 ShouldBindWith 而不是 BindJSON 可以让我们指定绑定类型，并且它会自动处理验证
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()}) // 返回具体的验证错误信息
+		return
+	}
+	err := s.CreateComment(&req).Error
+	if err != nil {
+		return
+	}
+
+	rsp.Code = 0
+	rsp.Msg = "评论成功"
+	c.JSON(http.StatusOK, rsp)
 }
 
-func CommentHandler(c *gin.Context) {
-	var req CreateCommentRequest
+func CreateCommentHandler(c *gin.Context) {
+	var req dto.CreateCommentRequest
+	var rsp core.Rsp
 	if err := c.ShouldBindWith(&req, binding.JSON); err != nil {
 		// 使用 ShouldBindWith 而不是 BindJSON 可以让我们指定绑定类型，并且它会自动处理验证
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()}) // 返回具体的验证错误信息
@@ -69,12 +112,16 @@ func CommentHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch comments"})
 		return
 	}
-	getResponse := GetCommentsResponse{Comments: comments}
-	c.JSON(http.StatusOK, getResponse)
+
+	rsp.Data = GetCommentsResponse{Comments: comments}
+	rsp.Code = 0
+	rsp.Msg = "评论成功"
+	c.JSON(http.StatusOK, rsp)
 }
 
 func DeleteCommentHandler(c *gin.Context) {
 	commentID := c.Param("id")
+	var rsp core.Rsp
 	var comment model.Comment
 	if err := db.Db.First(&comment, commentID).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Comment not found"})
@@ -106,6 +153,8 @@ func DeleteCommentHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch comments"})
 		return
 	}
-	deleteResponse := DeleteCommentResponse{Comments: comments}
-	c.JSON(http.StatusOK, deleteResponse)
+
+	rsp.Code = 0
+	rsp.Msg = "删除成功"
+	c.JSON(http.StatusOK, rsp)
 }

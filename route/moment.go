@@ -28,7 +28,7 @@ func initMomentsRoute(r *gin.Engine) {
 	r.DELETE("/goods", controllers.CancelGoodsMomentHandler)
 
 	// 添加评论路由 11
-	r.POST("/moments/:moment_id/comments", controllers.CommentHandler)
+	r.POST("/moments/:moment_id/comments", controllers.CreateCommentHandler)
 
 	// 删除评论路由  12
 	r.DELETE("/comments/:id", controllers.DeleteCommentHandler)
