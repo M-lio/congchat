@@ -27,9 +27,10 @@ func initMomentsRoute(r *gin.Engine) {
 	//取消点赞朋友圈10
 	r.DELETE("/goods", controllers.CancelGoodsMomentHandler)
 
+	api := controllers.SysComment{}
 	// 添加评论路由 11
-	r.POST("/moments/:moment_id/comments", controllers.CreateCommentHandler)
+	r.POST("/moments/:moment_id/comments", api.Insert)
 
 	// 删除评论路由  12
-	r.DELETE("/comments/:id", controllers.DeleteCommentHandler)
+	r.DELETE("/comments/:id", api.Delete)
 }

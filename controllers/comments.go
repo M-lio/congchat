@@ -6,10 +6,7 @@ import (
 	"congchat-user/model"
 	"congchat-user/service"
 	"congchat-user/service/dto"
-	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
-	"gorm.io/gorm"
 	"net/http"
 )
 
@@ -51,8 +48,7 @@ func (e SysComment) Insert(c *gin.Context) {
 	req := dto.CreateCommentRequest{}
 	var rsp core.Rsp
 	s := new(service.SysComment)
-	if err := c.ShouldBindWith(&req, binding.JSON); err != nil {
-		// 使用 ShouldBindWith 而不是 BindJSON 可以让我们指定绑定类型，并且它会自动处理验证
+	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()}) // 返回具体的验证错误信息
 		return
 	}
@@ -66,7 +62,7 @@ func (e SysComment) Insert(c *gin.Context) {
 	c.JSON(http.StatusOK, rsp)
 }
 
-func CreateCommentHandler(c *gin.Context) {
+/*func CreateCommentHandler(c *gin.Context) {
 	var req dto.CreateCommentRequest
 	var rsp core.Rsp
 	if err := c.ShouldBindWith(&req, binding.JSON); err != nil {
@@ -117,6 +113,24 @@ func CreateCommentHandler(c *gin.Context) {
 	rsp.Code = 0
 	rsp.Msg = "评论成功"
 	c.JSON(http.StatusOK, rsp)
+}
+*///CreatComenntHandler(e)
+func (e SysComment) Delete(c *gin.Context) {
+	req := dto.DeleteCommentRequest{}
+	var rsp core.Rsp
+	s := new(service.SysComment)
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()}) // 返回具体的验证错误信息
+		return
+	}
+	err := s.Remove(&req).Error
+	if err != nil {
+		return
+	}
+	rsp.Code = 0
+	rsp.Msg = "删除成功"
+	c.JSON(http.StatusOK, rsp)
+
 }
 
 func DeleteCommentHandler(c *gin.Context) {
