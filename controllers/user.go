@@ -4,23 +4,9 @@ import (
 	"congchat-user/db"
 	"congchat-user/model"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 )
-
-type Friendship struct {
-	gorm.Model
-	model.User
-	UserID   uint   `gorm:"not null"`
-	FriendID uint   `gorm:"not null"`
-	Status   string `gorm:"default:'pending'"`
-}
-type FriendshipStatus struct {
-	FriendID uint   `json:"friend_id"`
-	Username string `json:"username"`
-	Status   string `json:"status"`
-}
 
 // 控制器包含需要用到的实体 以及逻辑处理函数
 // 获取用户资料//修改时间10.24.1.1
@@ -56,19 +42,19 @@ func UpdateUserHandle(c *gin.Context) {
 func GetFriendsHandler(c *gin.Context) {
 	userID := c.GetInt("id")
 
-	var friendships []Friendship
+	var friendships []model.Friendship
 	result := db.Db.Preload("User").Preload("Friend").Where("user_id = ? OR friend_id = ?", userID, userID).Find(&friendships)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch friendships"})
 		return
 	}
 
-	var friendStatuses []FriendshipStatus //为什么用切片形式
+	var friendStatuses []model.FriendshipStatus //为什么用切片形式
 	for _, friendship := range friendships {
 		if friendship.UserID == uint(userID) {
 			var friend model.User
 			db.Db.First(&friend, friendship.FriendID)
-			friendStatuses = append(friendStatuses, FriendshipStatus{
+			friendStatuses = append(friendStatuses, model.FriendshipStatus{
 				FriendID: friendship.FriendID,
 				Username: friend.Username,
 				Status:   friendship.Status,
@@ -76,7 +62,7 @@ func GetFriendsHandler(c *gin.Context) {
 		} else {
 			var user model.User
 			db.Db.First(&user, friendship.UserID)
-			friendStatuses = append(friendStatuses, FriendshipStatus{
+			friendStatuses = append(friendStatuses, model.FriendshipStatus{
 				FriendID: friendship.UserID,
 				Username: user.Username,
 				Status:   friendship.Status,

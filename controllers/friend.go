@@ -1,8 +1,11 @@
 package controllers
 
 import (
+	"congchat-user/core"
 	"congchat-user/db"
 	"congchat-user/model"
+	"congchat-user/service"
+	"congchat-user/service/dto"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -10,11 +13,93 @@ import (
 	"strconv"
 )
 
-type AddFriendRequest struct {
-	FriendUsername string `json:"friend_username" binding:"required"`
+type SysFriends struct {
+	core.Api
 }
 
+// 添加好友接口2
+func (e SysFriends) Add(c *gin.Context) {
+	var req dto.AddFriendRequest
+	var rsp core.Rsp
+	s := new(service.SysFriends)
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()}) // 返回具体的验证错误信息
+		return
+	}
+	err := s.AddFriend(&req).Error
+	if err != nil {
+		return
+	}
+
+	rsp.Code = 0
+	rsp.Msg = "添加好友成功"
+	c.JSON(http.StatusOK, rsp)
+}
+
+/*// 添加好友接口2
+func AddFriendHandler(c *gin.Context) {
+	var req dto.AddFriendRequest
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	userID := c.GetInt("id")
+
+	var friend model.User
+
+	result := db.Db.First(&friend, "username=?", req.FriendUsername)
+	if result.Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	var existingFriendship model.Friendship
+	result = db.Db.First(&existingFriendship, "user_id = ? AND friend_id = ?", userID, friend.ID)
+	if result.Error != nil {
+		c.JSON(http.StatusConflict, gin.H{"error": "Friendship already exists"})
+		return
+	}
+
+	newFriendship := model.Friendship{
+		UserID:   uint(userID),
+		FriendID: friend.ID,
+		Status:   "pending",
+	}
+
+	// 尝试将好友保存到数据库
+	result = db.Db.Create(&newFriendship)
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create friendship"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Friend request sent"})
+}
+*/ //添加好友接口旧版本代码
+
 // 搜索好友的处理器函数接口1
+func (e SysFriends) Search(c *gin.Context) {
+	var req dto.SearchFriendRequest
+	var rsp core.Rsp
+	s := new(service.SysFriends)
+	// 初始化一个用户切片来存储搜索结果
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()}) // 返回具体的验证错误信息
+		return
+	}
+	err := s.SearchFriend(&req).Error
+	if err != nil {
+		return
+	}
+
+	rsp.Code = 0
+	rsp.Data = req.UserName
+	rsp.Msg = "搜素好友成功"
+	c.JSON(http.StatusOK, rsp)
+}
+
+/*// 搜索好友的处理器函数接口1
 func SearchFriendsHandler(c *gin.Context) {
 	// 从查询参数中获取搜索关键词
 	searchKey := c.Query("search")
@@ -47,47 +132,7 @@ func SearchFriendsHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"users": userList})
 }
-
-// 添加好友接口2
-func AddFriendHandler(c *gin.Context) {
-	var req AddFriendRequest
-	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	userID := c.GetInt("id")
-
-	var friend model.User
-
-	result := db.Db.First(&friend, "username=?", req.FriendUsername)
-	if result.Error != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
-		return
-	}
-
-	var existingFriendship Friendship
-	result = db.Db.First(&existingFriendship, "user_id = ? AND friend_id = ?", userID, friend.ID)
-	if result.Error != nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "Friendship already exists"})
-		return
-	}
-
-	newFriendship := Friendship{
-		UserID:   uint(userID),
-		FriendID: friend.ID,
-		Status:   "pending",
-	}
-
-	// 尝试将好友保存到数据库
-	result = db.Db.Create(&newFriendship)
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create friendship"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "Friend request sent"})
-}
+*/
 
 // acceptFriendsRequestHandler 接受好友申请的处理器3
 func AcceptFriendsRequestHandler(c *gin.Context) {
@@ -102,7 +147,7 @@ func AcceptFriendsRequestHandler(c *gin.Context) {
 	// 获取当前用户的 ID（这里假设已经通过中间件设置了）
 	userID := c.GetInt64("user_id")
 
-	var friendship Friendship
+	var friendship model.Friendship
 	// 查找好友请求
 	result := db.Db.First(&friendship, uint(friendshipID))
 	if result.Error != nil {
@@ -142,7 +187,7 @@ func RejectFriendsRequestHandler(c *gin.Context) {
 	// 获取当前用户的 ID（这里假设已经通过中间件设置了）
 	userID := c.GetInt64("user_id")
 
-	var friendship Friendship
+	var friendship model.Friendship
 	// 查找好友请求
 	result := db.Db.First(&friendship, uint(friendshipID))
 	if result.Error != nil {

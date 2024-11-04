@@ -2,8 +2,6 @@ package controllers
 
 import (
 	"congchat-user/core"
-	"congchat-user/db"
-	"congchat-user/model"
 	"congchat-user/service"
 	"congchat-user/service/dto"
 	"github.com/gin-gonic/gin"
@@ -14,7 +12,7 @@ type SysComment struct {
 	core.Api
 }
 
-//func (e SysMenu) GetPage(c *gin.Context) {
+/*/func (e SysMenu) GetPage(c *gin.Context) {
 //	s := service.SysMenu{}  		生成服务实例（service）
 //	req := dto.SysMenuGetPageReq{}	生成请求实例（请求在dto）
 //	err := e.MakeContext(c).		设置上下文
@@ -35,14 +33,15 @@ type SysComment struct {
 //	}
 //	e.OK(list, "查询成功")				返回
 //}
+*/
 
-type DeleteCommentResponse struct {
-	Comments []model.Comment `json:"comments"`
-}
-
-type GetCommentsResponse struct {
-	Comments []model.Comment `json:"comments"`
-}
+//type DeleteCommentResponse struct {
+//	Comments []model.Comment `json:"comments"`
+//}
+//
+//type GetCommentsResponse struct {
+//	Comments []model.Comment `json:"comments"`
+//}
 
 func (e SysComment) Insert(c *gin.Context) {
 	req := dto.CreateCommentRequest{}
@@ -114,7 +113,7 @@ func (e SysComment) Insert(c *gin.Context) {
 	rsp.Msg = "评论成功"
 	c.JSON(http.StatusOK, rsp)
 }
-*///CreatComenntHandler(e)
+*/ //CreatComenntHandler(e)//旧代码
 func (e SysComment) Delete(c *gin.Context) {
 	req := dto.DeleteCommentRequest{}
 	var rsp core.Rsp
@@ -128,11 +127,12 @@ func (e SysComment) Delete(c *gin.Context) {
 		return
 	}
 	rsp.Code = 0
-	rsp.Msg = "删除成功"
+	rsp.Msg = "删除评论成功"
 	c.JSON(http.StatusOK, rsp)
 
 }
 
+/*
 func DeleteCommentHandler(c *gin.Context) {
 	commentID := c.Param("id")
 	var rsp core.Rsp
@@ -172,3 +172,4 @@ func DeleteCommentHandler(c *gin.Context) {
 	rsp.Msg = "删除成功"
 	c.JSON(http.StatusOK, rsp)
 }
+*/ //DeleteComenntHandler旧代码
