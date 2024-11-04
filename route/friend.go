@@ -18,8 +18,8 @@ func initFriendRoute(r *gin.Engine) {
 	r.POST("/add-friend", api.Add)
 
 	//接受好友请求3
-	r.POST("/friendships/:id/accept", middleware.AuthMiddleware(controllers.AcceptFriendsRequestHandler))
+	r.POST("/friendships/:id/accept", middleware.AuthMiddleware(api.Accept))
 
 	//拒绝好友请求4
-	r.POST("/friendships/:id/reject", middleware.AuthMiddleware(controllers.RejectFriendsRequestHandler))
+	r.POST("/friendships/:id/reject", middleware.AuthMiddleware(api.Reject))
 }

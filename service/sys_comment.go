@@ -4,6 +4,7 @@ import (
 	"congchat-user/db"
 	"congchat-user/model"
 	"congchat-user/service/dto"
+	"errors"
 	"gorm.io/gorm"
 )
 
@@ -18,7 +19,7 @@ func (e *SysComment) CreateComment(c *dto.CreateCommentRequest) *SysComment {
 	var existingComment model.Comment
 	tx := e.Orm.Debug().Begin()
 	err = db.Db.Where("moment_id = ? AND user_id = ? AND contents = ? ", c.MomentID, c.UserID, c.Contents).First(&existingComment).Error
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(gorm.ErrRecordNotFound, err) {
 		_ = e.AddError(err)
 		tx.Rollback()
 	}
@@ -41,6 +42,7 @@ func (e *SysComment) CreateComment(c *dto.CreateCommentRequest) *SysComment {
 	moment.Comments++
 
 	db.Db.Save(&moment)
+	tx.Commit()
 	return e
 }
 

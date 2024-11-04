@@ -2,22 +2,17 @@ package controllers
 
 import (
 	"congchat-user/core"
-	"congchat-user/db"
-	"congchat-user/model"
 	"congchat-user/service"
 	"congchat-user/service/dto"
-	"errors"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"net/http"
-	"strconv"
 )
 
 type SysFriends struct {
 	core.Api
 }
 
-// 添加好友接口2
+// Add 添加好友接口2  11.4
 func (e SysFriends) Add(c *gin.Context) {
 	var req dto.AddFriendRequest
 	var rsp core.Rsp
@@ -78,7 +73,7 @@ func AddFriendHandler(c *gin.Context) {
 }
 */ //添加好友接口旧版本代码
 
-// 搜索好友的处理器函数接口1
+// Search 搜索好友的处理器函数接口1 //11.4
 func (e SysFriends) Search(c *gin.Context) {
 	var req dto.SearchFriendRequest
 	var rsp core.Rsp
@@ -134,7 +129,27 @@ func SearchFriendsHandler(c *gin.Context) {
 }
 */
 
-// acceptFriendsRequestHandler 接受好友申请的处理器3
+// Accept 接受好友申请的处理器3
+func (e SysFriends) Accept(c *gin.Context) {
+	var req dto.AcceptFriendRequest
+	var rsp core.Rsp
+	s := new(service.SysFriends)
+	// 初始化一个用户切片来存储搜索结果
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()}) // 返回具体的验证错误信息
+		return
+	}
+	err := s.AcceptFriend(&req).Error
+	if err != nil {
+		return
+	}
+
+	rsp.Code = 0
+	rsp.Msg = "搜素好友成功"
+	c.JSON(http.StatusOK, rsp)
+}
+
+/*// acceptFriendsRequestHandler 接受好友申请的处理器3
 func AcceptFriendsRequestHandler(c *gin.Context) {
 	// 从 URL 参数中获取好友请求 ID
 	friendshipIDStr := c.Param("id")
@@ -175,6 +190,29 @@ func AcceptFriendsRequestHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Friendship accepted"})
 }
 
+*/ //acceptFriendsRequestHandler 接受好友申请的处理器3旧代码
+
+// Reject 拒绝好友申请的处理器4
+func (e SysFriends) Reject(c *gin.Context) {
+	var req dto.RejectFriendRequest
+	var rsp core.Rsp
+	s := new(service.SysFriends)
+	// 初始化一个用户切片来存储搜索结果
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()}) // 返回具体的验证错误信息
+		return
+	}
+	err := s.RejectFriend(&req).Error
+	if err != nil {
+		return
+	}
+
+	rsp.Code = 0
+	rsp.Msg = "拒绝好友通过"
+	c.JSON(http.StatusOK, rsp)
+}
+
+/*
 func RejectFriendsRequestHandler(c *gin.Context) {
 	// 从 URL 参数中获取好友请求 ID
 	friendshipIDStr := c.Param("id")
@@ -214,3 +252,5 @@ func RejectFriendsRequestHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Friendship rejected"})
 }
+
+*/ //Reject拒绝好友申请的处理器4旧代码

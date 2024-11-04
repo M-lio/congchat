@@ -4,6 +4,7 @@ import (
 	"congchat-user/db"
 	"congchat-user/model"
 	"congchat-user/service/dto"
+	"errors"
 	"gorm.io/gorm"
 )
 
@@ -17,7 +18,7 @@ func (e *SysFriends) AddFriend(c *dto.AddFriendRequest) *SysFriends {
 	var existingFriend model.Friendship
 	tx := e.Orm.Debug().Begin()
 	err = db.Db.Where("user_id = ? AND friend_username ?", c.UserID, c.FriendUsername).First(&existingFriend).Error
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		_ = e.AddError(err)
 		tx.Rollback()
 	}
@@ -40,7 +41,7 @@ func (e *SysFriends) AddFriend(c *dto.AddFriendRequest) *SysFriends {
 	}
 
 	newFriendship := model.Friendship{
-		UserID:   uint(userID),
+		UserID:   userID,
 		FriendID: friend.ID,
 		Status:   "pending",
 	}
@@ -51,6 +52,7 @@ func (e *SysFriends) AddFriend(c *dto.AddFriendRequest) *SysFriends {
 		_ = e.AddError(err)
 		tx.Rollback()
 	}
+	tx.Commit()
 	return e
 }
 
@@ -83,5 +85,69 @@ func (e *SysFriends) SearchFriend(c *dto.SearchFriendRequest) *SysFriends {
 		}
 	}
 
+	return e
+}
+
+func (e *SysFriends) AcceptFriend(c *dto.AcceptFriendRequest) *SysFriends {
+	var err error
+	tx := e.Orm.Debug().Begin()
+
+	// 获取当前用户的 ID
+	userID := c.UserID
+
+	var friendship model.Friendship
+	// 查找好友请求
+	result := db.Db.First(&friendship, userID)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			_ = e.AddError(err)
+		}
+		tx.Rollback()
+	}
+
+	// 检查当前用户是否是接受该请求的合适人选（例如，检查请求是否发送给当前用户）
+	if friendship.UserID != userID && friendship.FriendID != userID {
+		_ = e.AddError(err)
+		tx.Rollback()
+	}
+
+	// 更新好友请求的状态为“已接受”
+	db.Db.Model(&friendship).Update("Status", "accepted")
+	if db.Db.Error != nil {
+		_ = e.AddError(err)
+		tx.Rollback()
+	}
+	return e
+}
+
+func (e *SysFriends) RejectFriend(c *dto.RejectFriendRequest) *SysFriends {
+	var err error
+	tx := e.Orm.Debug().Begin()
+
+	// 获取当前用户的 ID
+	userID := c.UserID
+
+	var friendship model.Friendship
+	// 查找好友请求
+	result := db.Db.First(&friendship, userID)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			_ = e.AddError(err)
+		}
+		tx.Rollback()
+	}
+
+	// 检查当前用户是否是拒绝该请求的合适人选（例如，检查请求是否发送给当前用户）
+	if friendship.UserID != userID && friendship.FriendID != userID {
+		_ = e.AddError(err)
+		tx.Rollback()
+	}
+
+	// 更新好友请求的状态为“已拒绝”
+	db.Db.Model(&friendship).Update("Status", "rejected")
+	if db.Db.Error != nil {
+		_ = e.AddError(err)
+		tx.Rollback()
+	}
 	return e
 }
