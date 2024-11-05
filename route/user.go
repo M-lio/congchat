@@ -9,14 +9,15 @@ import (
 
 // initUserRoute 初始化登录路由信息
 func initUserRoute(r *gin.Engine) {
+	UserApi := controllers.SysUser{}
 	Group := r.Group("/user")
 
 	// 获取用户资料(其实也要先进行身份验证吗?)//修改时间10.24.1
-	Group.GET("/:id", controllers.GetUserHandle)
+	Group.GET("/:id", UserApi.Get)
 
 	// 更新用户资料()//修改时间10.24.2
-	Group.PUT("/:id", controllers.UpdateUserHandle)
+	Group.PUT("/:id", UserApi.Update)
 
 	//发送获取好友列表请求
-	Group.GET("/friend", controllers.GetFriendsHandler)
+	Group.GET("/friend", UserApi.GetFriends)
 }

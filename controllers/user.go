@@ -1,15 +1,45 @@
 package controllers
 
 import (
-	"congchat-user/db"
+	"congchat-user/core"
 	"congchat-user/model"
+	"congchat-user/service"
+	"congchat-user/service/dto"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"strconv"
 )
 
-// 控制器包含需要用到的实体 以及逻辑处理函数
+type SysUser struct {
+	core.Api
+}
+
+// Get 处理获取用户资料的接口
+// 修改时间10.24.1.1
+func (e SysUser) Get(c *gin.Context) {
+	s := service.SysUser{}
+	var rsp core.Rsp
+	req := dto.GetUserRequest{}
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var user model.User
+	err := s.GetUser(&req).Error
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	rsp.Code = 0
+	rsp.Data = user
+	rsp.Msg = "获取用户资料成功"
+	c.JSON(http.StatusOK, rsp)
+}
+
+// 控制器包含需要用到的实体 以及逻辑处理函数 旧代码
 // 获取用户资料//修改时间10.24.1.1
+/*
 func GetUserHandle(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	var user model.User
@@ -22,8 +52,31 @@ func GetUserHandle(c *gin.Context) {
 
 	c.JSON(http.StatusOK, user)
 }
+*/
 
-// 更新用户资料//修改时间10.24.1.2
+// Update 更新用户资料
+func (e SysUser) Update(c *gin.Context) {
+	s := service.SysUser{}
+	var rsp core.Rsp
+	req := dto.UpdateUserRequest{}
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := s.UpdateUser(&req).Error
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	rsp.Code = 0
+	rsp.Msg = "更新用户资料成功"
+	c.JSON(http.StatusOK, rsp)
+}
+
+// 更新用户资料//修改时间10.24.1.2 旧代码
+/*
 func UpdateUserHandle(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	var user model.User
@@ -38,7 +91,32 @@ func UpdateUserHandle(c *gin.Context) {
 	db.Db.Model(&model.User{}).Where("id = ?", id).Updates(user)
 	c.JSON(http.StatusOK, gin.H{"message": "User updated successfully"})
 }
+*/
 
+// GetFriends 获取好友列表
+func (e SysUser) GetFriends(c *gin.Context) {
+	s := service.SysUser{}
+	var rsp core.Rsp
+	req := dto.GetFriendsRequest{}
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var user model.User
+	err := s.GetFriends(&req).Error
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	rsp.Code = 0
+	rsp.Data = user
+	rsp.Msg = "获取好友列表成功"
+	c.JSON(http.StatusOK, rsp)
+}
+
+/*
 func GetFriendsHandler(c *gin.Context) {
 	userID := c.GetInt("id")
 
@@ -72,3 +150,4 @@ func GetFriendsHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, friendStatuses)
 }
+*/ //GetFriends 获取好友列表旧代码

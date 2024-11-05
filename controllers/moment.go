@@ -13,10 +13,6 @@ type SysMoment struct {
 	core.Api
 }
 
-type GetMomentResponse struct {
-	Moments []model.Moment `json:"moments"`
-}
-
 // GetMomentRequest 查看朋友圈动态请求（）本质应该是一个列表（含有朋友动态）//滑动查询
 type GetMomentRequest struct {
 	StartIdx int //0  -  9
@@ -89,6 +85,7 @@ func (e SysMoment) Edit(c *gin.Context) {
 	}
 	err := s.EditMoment(&req).Error
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()}) // 返回具体的验证错误信息
 		return
 	}
 
@@ -135,7 +132,7 @@ func EditMomentHandler(c *gin.Context) {
 
 }
 
-*/ // 处理编辑动态时刻的接口旧代码
+*/// 处理编辑动态时刻的接口旧代码
 
 // Delete 处理删除朋友圈动态函数
 func (e SysMoment) Delete(c *gin.Context) {
