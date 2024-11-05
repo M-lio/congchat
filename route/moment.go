@@ -21,11 +21,12 @@ func initMomentsRoute(r *gin.Engine) {
 	//查看朋友圈的路由8
 	r.GET("/get-moments", middleware.AuthMiddleware(controllers.GetMomentHandler))
 
+	GoodApi := controllers.SysGoods{}
 	//点赞朋友圈9
-	r.POST("/goods", controllers.GoodsMomentHandler)
+	r.POST("/goods", GoodApi.Add)
 
 	//取消点赞朋友圈10
-	r.DELETE("/goods", controllers.CancelGoodsMomentHandler)
+	r.DELETE("/goods", GoodApi.Cancel)
 
 	api := controllers.SysComment{}
 	// 添加评论路由 11

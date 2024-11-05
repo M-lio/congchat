@@ -1,14 +1,38 @@
 package controllers
 
 import (
-	"congchat-user/db"
-	"congchat-user/model"
+	"congchat-user/core"
+	"congchat-user/service"
+	"congchat-user/service/dto"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-// GoodsMoment 为指定用户给指定动态点赞
-func GoodsMomentHandler(c *gin.Context) {
+type SysGoods struct {
+	core.Api
+}
+
+// Add 为指定用户给指定动态点赞  11.5
+func (e SysGoods) Add(c *gin.Context) {
+	var req dto.AddGoodRequest
+	var rsp core.Rsp
+	s := new(service.SysGoods)
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()}) // 返回具体的验证错误信息
+		return
+	}
+	err := s.AddGood(&req).Error
+	if err != nil {
+		return
+	}
+
+	rsp.Code = 0
+	rsp.Msg = "点赞成功"
+	c.JSON(http.StatusOK, rsp)
+}
+
+// GoodsMomentHandler 为指定用户给指定动态点赞旧代码
+/*func GoodsMomentHandler(c *gin.Context) {
 	var request struct {
 		UserID   uint `json:"user_id"`
 		MomentID uint `json:"moment_id"`
@@ -54,7 +78,29 @@ func GoodsMomentHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Good successfully"})
 }
 
-// CancelGoodsMoment 取消指定用户对指定动态的点赞
+*/
+
+// Cancel 取消指定用户对指定动态的点赞  11.5
+func (e SysGoods) Cancel(c *gin.Context) {
+	var req dto.CancelGoodRequest
+	var rsp core.Rsp
+	s := new(service.SysGoods)
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()}) // 返回具体的验证错误信息
+		return
+	}
+	err := s.CancelGood(&req).Error
+	if err != nil {
+		return
+	}
+
+	rsp.Code = 0
+	rsp.Msg = "取消点赞成功"
+	c.JSON(http.StatusOK, rsp)
+}
+
+// CancelGoodsMomentHandler 取消指定用户对指定动态的点赞 旧代码
+/*
 func CancelGoodsMomentHandler(c *gin.Context) {
 	var request struct {
 		UserID   uint `json:"user_id"`
@@ -99,3 +145,5 @@ func CancelGoodsMomentHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Good canceled successfully"})
 }
+
+*/
