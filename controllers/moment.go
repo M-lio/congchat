@@ -1,27 +1,23 @@
 package controllers
 
 import (
-	"congchat-user/db"
+	"congchat-user/core"
 	"congchat-user/model"
+	"congchat-user/service"
+	"congchat-user/service/dto"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"strconv"
 )
+
+type SysMoment struct {
+	core.Api
+}
 
 type GetMomentResponse struct {
 	Moments []model.Moment `json:"moments"`
 }
 
-// 发送发布朋友圈动态请求
-type CreateMomentRequest struct {
-	Content string `json:"type:text" binding:"required"`
-	UserID  uint   `gorm:"index"`
-	ImgURL  string `gorm:"type:text"` //图片或视频地址。用于前端加载视频
-	Goods   int    `gorm:"not null"`
-	GoodsID []int  `gorm:"not null"`
-}
-
-// 查看朋友圈动态请求（）本质应该是一个列表（含有朋友动态）//滑动查询
+// GetMomentRequest 查看朋友圈动态请求（）本质应该是一个列表（含有朋友动态）//滑动查询
 type GetMomentRequest struct {
 	StartIdx int //0  -  9
 	Limit    int //10
@@ -30,9 +26,29 @@ type GetMomentRequest struct {
 	SearchStr string
 }
 
-// 10.21.01处理发布动态时刻的接口
+// Insert 11.5处理发布动态时刻的接口
+func (e SysMoment) Insert(c *gin.Context) {
+	req := dto.CreateMomentRequest{}
+	var rsp core.Rsp
+	s := new(service.SysMoment)
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()}) // 返回具体的验证错误信息
+		return
+	}
+	err := s.CreateMoment(&req).Error
+	if err != nil {
+		return
+	}
+
+	rsp.Code = 0
+	rsp.Msg = "朋友圈发布成功"
+	c.JSON(http.StatusOK, rsp)
+}
+
+// 10.21.01处理发布动态时刻的接口旧代码
+/*
 func CreateMomentHandler(c *gin.Context) {
-	var req CreateMomentRequest
+	var req dto.CreateMomentRequest
 	//绑定参数
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -59,6 +75,29 @@ func CreateMomentHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Moment created successfully", "moment_id": moment.ID})
 
 }
+
+*/
+
+// Edit 11.5处理编辑动态时刻的接口
+func (e SysMoment) Edit(c *gin.Context) {
+	req := dto.EditMomentRequest{}
+	var rsp core.Rsp
+	s := new(service.SysMoment)
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()}) // 返回具体的验证错误信息
+		return
+	}
+	err := s.EditMoment(&req).Error
+	if err != nil {
+		return
+	}
+
+	rsp.Code = 0
+	rsp.Msg = "朋友圈编辑成功"
+	c.JSON(http.StatusOK, rsp)
+}
+
+/*
 func EditMomentHandler(c *gin.Context) {
 	// 从URL参数中获取动态ID
 	momentIDStr := c.Param("moment_id")
@@ -67,7 +106,7 @@ func EditMomentHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid moment ID"})
 	}
 
-	//初始化更新的朋友圈（有待把数据放入originalmoment里）
+	//初始化更新的朋友圈（有待把数据放入originalMoment里）
 	var updateMoment model.Moment
 	if err := c.ShouldBind(&updateMoment); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
@@ -96,7 +135,28 @@ func EditMomentHandler(c *gin.Context) {
 
 }
 
-// 10.27.01DeleteMomentHandler处理删除朋友圈动态函数
+*/ // 处理编辑动态时刻的接口旧代码
+
+// Delete 处理删除朋友圈动态函数
+func (e SysMoment) Delete(c *gin.Context) {
+	req := dto.DeleteMomentRequest{}
+	var rsp core.Rsp
+	s := new(service.SysMoment)
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()}) // 返回具体的验证错误信息
+		return
+	}
+	err := s.RemoveMoment(&req).Error
+	if err != nil {
+		return
+	}
+	rsp.Code = 0
+	rsp.Msg = "删除朋友圈成功"
+	c.JSON(http.StatusOK, rsp)
+}
+
+// 10.27.01DeleteMomentHandler处理删除朋友圈动态函数旧代码
+/*
 func DeleteMomentHandler(c *gin.Context) {
 	// 从URL参数中获取动态ID
 	momentIDStr := c.Param("moment_id")
@@ -106,7 +166,7 @@ func DeleteMomentHandler(c *gin.Context) {
 		return
 	}
 
-	//初始化moment动态 根据momentid来删除动态
+	//初始化moment动态 根据momentID来删除动态
 	var moment model.Moment
 	//绑参
 	result := db.Db.Where("id = ?", momentID).Delete(&moment)
@@ -123,8 +183,33 @@ func DeleteMomentHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Moment deleted successfully"})
 
 }
+*/
 
-// 10.21.01处理查看朋友圈动态时刻的接口
+// Get 处理查看朋友圈动态时刻的接口
+func (e SysMoment) Get(c *gin.Context) {
+	s := service.SysMoment{}
+	var rsp core.Rsp
+	req := dto.GetMomentRequest{}
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var list = make([]model.Moment, 0)
+	err := s.GetMoment(&req, &list).Error
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	rsp.Code = 0
+	rsp.Data = list
+	rsp.Msg = "获取朋友圈成功"
+	c.JSON(http.StatusOK, rsp)
+}
+
+// 10.21.01处理查看朋友圈动态时刻的接口旧代码
+/*
 func GetMomentHandler(c *gin.Context) {
 	var req GetMomentRequest //初始化朋友圈动态请求
 
@@ -172,3 +257,4 @@ func GetMomentHandler(c *gin.Context) {
 	// 返回成功响应
 	c.JSON(http.StatusOK, gin.H{"message": "GetMoment successfully", "data": moments})
 }
+*/

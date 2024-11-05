@@ -113,7 +113,7 @@ func (e SysComment) Insert(c *gin.Context) {
 	rsp.Msg = "评论成功"
 	c.JSON(http.StatusOK, rsp)
 }
-*/ //CreatComenntHandler(e)//旧代码
+*/ //CreatCommentHandler(e)//旧代码
 func (e SysComment) Delete(c *gin.Context) {
 	req := dto.DeleteCommentRequest{}
 	var rsp core.Rsp
@@ -122,7 +122,7 @@ func (e SysComment) Delete(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()}) // 返回具体的验证错误信息
 		return
 	}
-	err := s.Remove(&req).Error
+	err := s.RemoveComment(&req).Error
 	if err != nil {
 		return
 	}

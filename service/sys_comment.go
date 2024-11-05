@@ -46,8 +46,8 @@ func (e *SysComment) CreateComment(c *dto.CreateCommentRequest) *SysComment {
 	return e
 }
 
-// Remove 删除SysComment
-func (e *SysComment) Remove(d *dto.DeleteCommentRequest) *SysComment {
+// RemoveComment 删除SysComment
+func (e *SysComment) RemoveComment(d *dto.DeleteCommentRequest) *SysComment {
 	var err error
 	var data model.Comment
 	db.Db.First(&data, d.Ids)
