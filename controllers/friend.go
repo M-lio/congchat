@@ -23,6 +23,7 @@ func (e SysFriends) Add(c *gin.Context) {
 	}
 	err := s.AddFriend(&req).Error
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -85,6 +86,7 @@ func (e SysFriends) Search(c *gin.Context) {
 	}
 	err := s.SearchFriend(&req).Error
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -141,6 +143,7 @@ func (e SysFriends) Accept(c *gin.Context) {
 	}
 	err := s.AcceptFriend(&req).Error
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -204,6 +207,7 @@ func (e SysFriends) Reject(c *gin.Context) {
 	}
 	err := s.RejectFriend(&req).Error
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 

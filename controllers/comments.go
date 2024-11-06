@@ -53,6 +53,7 @@ func (e SysComment) Insert(c *gin.Context) {
 	}
 	err := s.CreateComment(&req).Error
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -124,6 +125,7 @@ func (e SysComment) Delete(c *gin.Context) {
 	}
 	err := s.RemoveComment(&req).Error
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	rsp.Code = 0

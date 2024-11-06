@@ -2,9 +2,10 @@ package service
 
 import "C"
 import (
-	"congchat-user/db"
 	"congchat-user/model"
 	"congchat-user/service/dto"
+	"errors"
+	"fmt"
 )
 
 type SysMoment struct {
@@ -15,18 +16,46 @@ type SysMoment struct {
 func (e *SysMoment) CreateMoment(d *dto.CreateMomentRequest) *SysMoment {
 	var err error
 	tx := e.Orm.Debug().Begin()
-	userID := d.UserID
-	//TODO 参数校验（是否符合需求，万一涉及暴力，黄色，广告。直接拦截）
+	//defer语句来捕获可能发生的恐慌（panic），并在发生恐慌时回滚事务
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			fmt.Println("Recovered in CreateMoment:", r)
+		}
+	}()
+
+	// 文本参数校验 查看是否符合格式
+	if err = dto.ValidateContent(d.Content); err != nil {
+		fmt.Println("内容验证错误:", err)
+		_ = e.AddError(err)
+		tx.Rollback()
+		return e
+	}
+
+	//检验下图片的输入是否大于9张图片的处理函数
+	if err = dto.ValidateImgURLs(d.ImgURL); err != nil {
+		fmt.Println("验证错误:", err)
+		_ = e.AddError(err)
+		tx.Rollback()
+	}
+
+	// 其他参数校验，例如检查UserID是否为0（假设0是无效的用户ID）
+	if d.UserID == 0 {
+		err = errors.New("用户ID不能为空")
+		fmt.Println("用户ID验证错误:", err)
+		_ = e.AddError(err)
+		tx.Rollback()
+		return e
+	}
 
 	// 创建新的Moment并保存到数据库（校验）
 	moment := &model.Moment{
-		UserID:  userID,
+		UserID:  d.UserID,
 		Content: d.Content,
 		ImgURL:  d.ImgURL,
-		Goods:   d.Goods,
-		GoodsID: d.GoodsID,
 	}
-	result := db.Db.Create(moment)
+
+	result := tx.Create(moment)
 	if result.Error != nil {
 		_ = e.AddError(err)
 		tx.Rollback()
@@ -38,10 +67,33 @@ func (e *SysMoment) CreateMoment(d *dto.CreateMomentRequest) *SysMoment {
 func (e *SysMoment) EditMoment(d *dto.EditMomentRequest) *SysMoment {
 	var err error
 	tx := e.Orm.Debug().Begin()
+	//defer语句来捕获可能发生的恐慌（panic），并在发生恐慌时回滚事务
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			fmt.Println("Recovered in EditMoment:", r)
+		}
+	}()
+
+	// 文本参数校验 查看是否符合格式
+	if err = dto.ValidateContent(d.Content); err != nil {
+		fmt.Println("内容验证错误:", err)
+		_ = e.AddError(err)
+		tx.Rollback()
+		return e
+	}
+
+	//检验下图片的输入是否大于9张图片的处理函数
+	if err = dto.ValidateImgURLs(d.ImgURL); err != nil {
+		fmt.Println("验证错误:", err)
+		_ = e.AddError(err)
+		tx.Rollback()
+	}
+
 	//初始化一个新的结构体来接受
 	var originalMoment model.Moment
 
-	result := db.Db.First(&originalMoment, d.ID)
+	result := tx.First(&originalMoment, d.ID)
 	if result.Error != nil {
 		_ = e.AddError(err)
 		tx.Rollback()
@@ -50,7 +102,7 @@ func (e *SysMoment) EditMoment(d *dto.EditMomentRequest) *SysMoment {
 	originalMoment.ImgURL = d.ImgURL
 
 	// 保存更改到数据库
-	if err = db.Db.Save(&originalMoment).Error; err != nil {
+	if err = tx.Save(&originalMoment).Error; err != nil {
 		_ = e.AddError(err)
 		tx.Rollback()
 	}
@@ -60,6 +112,15 @@ func (e *SysMoment) EditMoment(d *dto.EditMomentRequest) *SysMoment {
 
 func (e *SysMoment) GetMoment(c *dto.GetMomentRequest, list *[]model.Moment) *SysMoment {
 	var err error
+
+	tx := e.Orm.Debug().Begin()
+	//defer语句来捕获可能发生的恐慌（panic），并在发生恐慌时回滚事务
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			fmt.Println("Recovered in GetMoment:", r)
+		}
+	}()
 
 	// 构建查询（校验）旧代码 这里我通过传一个进来
 	//var moments []model.Moment
@@ -85,7 +146,7 @@ func (e *SysMoment) GetMoment(c *dto.GetMomentRequest, list *[]model.Moment) *Sy
 		whereArgs = append(whereArgs, searchStr)
 	}
 
-	query := db.Db.Model(&model.Moment{}).Preload("Comments").Order("created_at DESC")
+	query := tx.Model(&model.Moment{}).Preload("Comments").Order("created_at DESC")
 	if len(whereConditions) > 0 {
 		query = query.Where(whereConditions, whereArgs...)
 	}
@@ -94,25 +155,53 @@ func (e *SysMoment) GetMoment(c *dto.GetMomentRequest, list *[]model.Moment) *Sy
 	// 处理查询结果
 	if err != nil {
 		_ = e.AddError(err)
-
+		tx.Rollback()
 	}
+	tx.Commit()
+
 	return e
 }
 
-// RemoveComment 删除SysComment
+// RemoveMoment 删除SysComment
 func (e *SysMoment) RemoveMoment(d *dto.DeleteMomentRequest) *SysMoment {
 	var err error
 	tx := e.Orm.Debug().Begin()
+
+	//参数校验（需要通过才能继续往下走）
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			fmt.Println("Recovered in RemoveMoment:", r)
+		}
+	}()
+
+	// 参数校验
+	if d.Ids == nil || len(d.Ids) == 0 {
+		err = errors.New("必须提供至少一个Moment ID")
+		_ = e.AddError(err)
+		tx.Rollback()
+		return e
+	}
+	for _, id := range d.Ids {
+		if id <= 0 {
+			err = fmt.Errorf("无效的Moment ID: %d", id)
+			_ = e.AddError(err)
+			tx.Rollback()
+			return e
+		}
+	}
 	//初始化moment动态 根据momentID来删除动态
 	var moment model.Moment
 	//绑参
-	result := db.Db.Where("id = ?", d.Ids).Delete(&moment)
+	result := tx.Where("id = ?", d.Ids).Delete(&moment)
 	//校验
 	if result.Error != nil {
+		err = result.Error
 		_ = e.AddError(err)
 		tx.Rollback()
 	}
 	if result.RowsAffected == 0 {
+		err = errors.New("未找到要删除的Moment记录")
 		_ = e.AddError(err)
 		tx.Rollback()
 	}

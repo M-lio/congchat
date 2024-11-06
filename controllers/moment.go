@@ -33,6 +33,7 @@ func (e SysMoment) Insert(c *gin.Context) {
 	}
 	err := s.CreateMoment(&req).Error
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -132,7 +133,7 @@ func EditMomentHandler(c *gin.Context) {
 
 }
 
-*/// 处理编辑动态时刻的接口旧代码
+*/ // 处理编辑动态时刻的接口旧代码
 
 // Delete 处理删除朋友圈动态函数
 func (e SysMoment) Delete(c *gin.Context) {
@@ -145,6 +146,7 @@ func (e SysMoment) Delete(c *gin.Context) {
 	}
 	err := s.RemoveMoment(&req).Error
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	rsp.Code = 0
@@ -195,7 +197,7 @@ func (e SysMoment) Get(c *gin.Context) {
 	var list = make([]model.Moment, 0)
 	err := s.GetMoment(&req, &list).Error
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 

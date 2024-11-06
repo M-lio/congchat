@@ -23,6 +23,7 @@ func (e SysGoods) Add(c *gin.Context) {
 	}
 	err := s.AddGood(&req).Error
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -91,6 +92,7 @@ func (e SysGoods) Cancel(c *gin.Context) {
 	}
 	err := s.CancelGood(&req).Error
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 

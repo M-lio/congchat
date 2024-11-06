@@ -7,9 +7,9 @@ import (
 // Moment代表动态结构体
 type Moment struct {
 	gorm.Model
-	UserID   uint   `gorm:"index"`
-	Content  string `gorm:"type:text"`
-	ImgURL   string `gorm:"type:text"` //图片或视频地址。用于前端加载视频
+	UserID   uint     `gorm:"index"`
+	Content  string   `gorm:"type:text"`
+	ImgURL   []string `gorm:"type:text[]"` //图片或视频地址。用于前端加载视频
 	Comment  []Comment
 	Comments int   `gorm:"not null"`
 	Goods    int   `gorm:"not null"`

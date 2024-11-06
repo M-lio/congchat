@@ -14,7 +14,7 @@ type SysUser struct {
 }
 
 // Get 处理获取用户资料的接口
-// 修改时间10.24.1.1
+// 修改时间11.6
 func (e SysUser) Get(c *gin.Context) {
 	s := service.SysUser{}
 	var rsp core.Rsp
