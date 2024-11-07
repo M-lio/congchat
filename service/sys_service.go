@@ -27,3 +27,31 @@ func (e *SysComment) handleErrorAndRollback(tx *gorm.DB, err error) {
 	_ = e.AddError(err) // 假设 e 有一个 AddError 方法来记录错误
 	tx.Rollback()
 }
+
+// 辅助函数，用于处理错误并回滚事务
+func (e *SysFriends) handleErrorAndRollback(tx *gorm.DB, err error) {
+	fmt.Println("错误:", err)
+	_ = e.AddError(err) // 假设 e 有一个 AddError 方法来记录错误
+	tx.Rollback()
+}
+
+// 辅助函数，用于处理错误并回滚事务
+func (e *SysUser) handleErrorAndRollback(tx *gorm.DB, err error) {
+	fmt.Println("错误:", err)
+	_ = e.AddError(err) // 假设 e 有一个 AddError 方法来记录错误
+	tx.Rollback()
+}
+
+// 辅助函数，用于处理错误并回滚事务
+func (e *SysMoment) handleErrorAndRollback(tx *gorm.DB, err error) {
+	fmt.Println("错误:", err)
+	_ = e.AddError(err) // 假设 e 有一个 AddError 方法来记录错误
+	tx.Rollback()
+}
+
+// 辅助函数，用于处理错误并回滚事务
+func (e *SysGoods) handleErrorAndRollback(tx *gorm.DB, err error) {
+	fmt.Println("错误:", err)
+	_ = e.AddError(err) // 假设 e 有一个 AddError 方法来记录错误
+	tx.Rollback()
+}

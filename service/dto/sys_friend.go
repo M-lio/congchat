@@ -2,7 +2,7 @@ package dto
 
 type AddFriendRequest struct {
 	FriendUsername string `json:"friend_username" binding:"required"`
-	UserID         uint   `json:"user_id" binding:"required"` // 用户ID必填
+	UserID         uint   `json:"user_id" binding:"required,gte=1"` // 用户ID必填
 }
 
 type SearchFriendRequest struct {

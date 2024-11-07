@@ -26,25 +26,22 @@ func (e *SysMoment) CreateMoment(d *dto.CreateMomentRequest) *SysMoment {
 
 	// 文本参数校验 查看是否符合格式
 	if err = dto.ValidateContent(d.Content); err != nil {
-		fmt.Println("内容验证错误:", err)
-		_ = e.AddError(err)
-		tx.Rollback()
+		err = errors.New("内容验证错误")
+		e.handleErrorAndRollback(tx, err)
 		return e
 	}
 
 	//检验下图片的输入是否大于9张图片的处理函数
 	if err = dto.ValidateImgURLs(d.ImgURL); err != nil {
-		fmt.Println("验证错误:", err)
-		_ = e.AddError(err)
-		tx.Rollback()
+		err = errors.New("图片验证错误")
+		e.handleErrorAndRollback(tx, err)
+		return e
 	}
 
 	// 其他参数校验，例如检查UserID是否为0（假设0是无效的用户ID）
 	if d.UserID == 0 {
-		err = errors.New("用户ID不能为空")
-		fmt.Println("用户ID验证错误:", err)
-		_ = e.AddError(err)
-		tx.Rollback()
+		err = errors.New("用户ID不能为0")
+		e.handleErrorAndRollback(tx, err)
 		return e
 	}
 
@@ -57,8 +54,8 @@ func (e *SysMoment) CreateMoment(d *dto.CreateMomentRequest) *SysMoment {
 
 	result := tx.Create(moment)
 	if result.Error != nil {
-		_ = e.AddError(err)
-		tx.Rollback()
+		e.handleErrorAndRollback(tx, err)
+		return e
 	}
 	tx.Commit()
 	return e
@@ -77,17 +74,16 @@ func (e *SysMoment) EditMoment(d *dto.EditMomentRequest) *SysMoment {
 
 	// 文本参数校验 查看是否符合格式
 	if err = dto.ValidateContent(d.Content); err != nil {
-		fmt.Println("内容验证错误:", err)
-		_ = e.AddError(err)
-		tx.Rollback()
+		err = errors.New("内容验证错误")
+		e.handleErrorAndRollback(tx, err)
 		return e
 	}
 
 	//检验下图片的输入是否大于9张图片的处理函数
 	if err = dto.ValidateImgURLs(d.ImgURL); err != nil {
-		fmt.Println("验证错误:", err)
-		_ = e.AddError(err)
-		tx.Rollback()
+		err = errors.New("验证错误")
+		e.handleErrorAndRollback(tx, err)
+		return e
 	}
 
 	//初始化一个新的结构体来接受
@@ -103,8 +99,8 @@ func (e *SysMoment) EditMoment(d *dto.EditMomentRequest) *SysMoment {
 
 	// 保存更改到数据库
 	if err = tx.Save(&originalMoment).Error; err != nil {
-		_ = e.AddError(err)
-		tx.Rollback()
+		e.handleErrorAndRollback(tx, err)
+		return e
 	}
 
 	return e
@@ -178,15 +174,13 @@ func (e *SysMoment) RemoveMoment(d *dto.DeleteMomentRequest) *SysMoment {
 	// 参数校验
 	if d.Ids == nil || len(d.Ids) == 0 {
 		err = errors.New("必须提供至少一个Moment ID")
-		_ = e.AddError(err)
-		tx.Rollback()
+		e.handleErrorAndRollback(tx, err)
 		return e
 	}
 	for _, id := range d.Ids {
 		if id <= 0 {
 			err = fmt.Errorf("无效的Moment ID: %d", id)
-			_ = e.AddError(err)
-			tx.Rollback()
+			e.handleErrorAndRollback(tx, err)
 			return e
 		}
 	}
@@ -197,13 +191,13 @@ func (e *SysMoment) RemoveMoment(d *dto.DeleteMomentRequest) *SysMoment {
 	//校验
 	if result.Error != nil {
 		err = result.Error
-		_ = e.AddError(err)
-		tx.Rollback()
+		e.handleErrorAndRollback(tx, err)
+		return e
 	}
 	if result.RowsAffected == 0 {
 		err = errors.New("未找到要删除的Moment记录")
-		_ = e.AddError(err)
-		tx.Rollback()
+		e.handleErrorAndRollback(tx, err)
+		return e
 	}
 	tx.Commit()
 

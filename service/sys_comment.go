@@ -33,15 +33,14 @@ func (e *SysComment) CreateComment(d *dto.CreateCommentRequest) *SysComment {
 
 	// 其他参数校验，例如检查UserID是否为0（假设0是无效的用户ID）
 	if d.UserID == 0 {
-		err = errors.New("用户ID错误")
+		err = errors.New("用户ID不能为0")
 		e.handleErrorAndRollback(tx, err)
 		return e
 	}
 
 	// 其他参数校验，例如检查MomentID是否为0（假设0是无效的朋友圈ID）
 	if d.MomentID == 0 {
-		err = errors.New("朋友圈ID不能为空")
-		err = errors.New("朋友圈ID错误")
+		err = errors.New("朋友圈ID不能为0")
 		e.handleErrorAndRollback(tx, err)
 		return e
 	}
@@ -58,6 +57,7 @@ func (e *SysComment) CreateComment(d *dto.CreateCommentRequest) *SysComment {
 		UserID:   d.UserID,
 	}).Error
 	if err != nil {
+		err = errors.New("创建评论时发生错误")
 		e.handleErrorAndRollback(tx, err)
 		return e
 	}
@@ -81,6 +81,13 @@ func (e *SysComment) RemoveComment(d *dto.DeleteCommentRequest) *SysComment {
 	var err error
 	var data model.Comment
 	tx := e.Orm.Debug().Begin()
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			fmt.Println("Recovered in RemoveComment:", r)
+		}
+	}()
 
 	// 参数校验
 	if len(d.Ids) == 0 {
