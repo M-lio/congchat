@@ -4,12 +4,24 @@ import (
 	"congchat-user/db"
 	"congchat-user/model"
 	"congchat-user/service/dto"
+	"context"
 	"errors"
 	"fmt"
+	"log"
 )
 
 type SysGoods struct {
 	Service
+}
+
+var ctx = context.Background()
+
+func likeMoment(d *dto.AddGoodRequest) {
+	key := fmt.Sprintf("moment:%s:likes", d.MomentID)
+	_, err := db.RedisClient.RPush(ctx, key, d.UserID).Result()
+	if err != nil {
+		log.Fatalf("Failed to add like: %v", err)
+	}
 }
 
 func (e *SysGoods) AddGood(d *dto.AddGoodRequest) *SysGoods {

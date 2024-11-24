@@ -16,7 +16,7 @@ type Moment struct {
 	GoodsID  []int `gorm:"not null"`
 }
 
-// comment评论结构体
+// Comment 评论结构体
 type Comment struct {
 	gorm.Model
 	MomentID   uint   `gorm:"not null"`

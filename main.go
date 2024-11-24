@@ -16,6 +16,7 @@ import (
 
 func main() {
 	db.InitDB()        // 初始化数据库连接
+	db.InitRedis()     // InitRedis	初始化Redis连接
 	r := gin.Default() // 创建一个默认的Gin引擎
 
 	// 定义全局异常处理

@@ -8,8 +8,10 @@ import (
 
 var Db *gorm.DB
 
-// 初始化数据库连接
+// InitDB 初始化连接数据库
+
 func InitDB() {
+	// [user[:password]@][net[(addr)]]/dbname[?param1=value1&paramN=valueN]
 	dsn := "root:52Tiananmen.@tcp(z1.juhong.live:3306)/congchat_user?charset=utf8mb4&parseTime=True&loc=Local"
 	var err error
 	Db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -19,9 +21,10 @@ func InitDB() {
 
 	// 自动迁移模式，确保 用户User存在
 	err = Db.AutoMigrate(&model.User{})
-	err = Db.AutoMigrate(&model.Moment{})
+	err = Db.AutoMigrate(&model.Friendship{})
+	//err = Db.AutoMigrate(&model.Moment{})
 	err = Db.AutoMigrate(&model.Goods{})
-	err = Db.AutoMigrate(&model.Comment{})
+	//err = Db.AutoMigrate(&model.Comment{})
 	if err != nil {
 		panic(err)
 	}

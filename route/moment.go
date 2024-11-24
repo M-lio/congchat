@@ -13,7 +13,7 @@ func initMomentsRoute(r *gin.Engine) {
 
 	GoodApi := controllers.SysGoods{}
 
-	api := controllers.SysComment{}
+	CommentApi := controllers.SysComment{}
 
 	// 发布朋友圈Moments的请求路由5
 	r.POST("/moments", middleware.AuthMiddleware(MomentApi.Insert))
@@ -34,8 +34,8 @@ func initMomentsRoute(r *gin.Engine) {
 	r.DELETE("/goods", GoodApi.Cancel)
 
 	// 添加评论路由 11
-	r.POST("/moments/:moment_id/comments", api.Insert)
+	r.POST("/moments/:moment_id/comments", CommentApi.Insert)
 
 	// 删除评论路由  12
-	r.DELETE("/comments/:id", api.Delete)
+	r.DELETE("/comments/:id", CommentApi.Delete)
 }
