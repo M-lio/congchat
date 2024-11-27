@@ -16,6 +16,21 @@ type DeleteCommentRequest struct {
 	Ids []int `json:"ids"`
 }
 
+// CreateClear 检查 Contents 和 UserID 和 MomentID是否都不为零
+func CreateClear(d *CreateCommentRequest) error {
+	if err := ValidateContents(d.Contents); err != nil {
+		return errors.New("内容验证格式错误")
+	}
+
+	if d.MomentID == 0 {
+		return errors.New("朋友圈ID不能为0")
+	}
+	if d.UserID == 0 {
+		return errors.New("用户ID不能为0")
+	}
+	return nil
+}
+
 // ValidateContents 校验文本内容是否包含敏感词或不符合要求的内容
 func ValidateContents(contents string) error {
 	// 这里可以添加具体的敏感词检测逻辑，或者使用现成的敏感词库

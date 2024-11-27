@@ -16,11 +16,21 @@ type SysGoods struct {
 
 var ctx = context.Background()
 
-func likeMoment(d *dto.AddGoodRequest) {
-	key := fmt.Sprintf("moment:%s:likes", d.MomentID)
-	_, err := db.RedisClient.RPush(ctx, key, d.UserID).Result()
+func Rgoods(d *dto.AddGoodRequest) {
+	key := fmt.Sprintf("moment:%s:goods", d.MomentID)
+	// 使用 SAdd 命令将用户ID添加到集合中
+	_, err := db.RedisClient.SAdd(ctx, key, d.UserID).Result()
 	if err != nil {
 		log.Fatalf("Failed to add like: %v", err)
+	}
+}
+
+func RremoveGoods(d *dto.CancelGoodRequest) {
+	key := fmt.Sprintf("moment:%s:goods", d.MomentID)
+	// 使用 SRem 命令从集合中移除用户ID
+	_, err := db.RedisClient.SRem(ctx, key, d.UserID).Result()
+	if err != nil {
+		log.Fatalf("Failed to remove good: %v", err)
 	}
 }
 
@@ -36,16 +46,8 @@ func (e *SysGoods) AddGood(d *dto.AddGoodRequest) *SysGoods {
 		}
 	}()
 
-	//检查MomentID是否为空
-	if d.MomentID == 0 {
-		err = errors.New("朋友圈ID不能为0")
-		e.handleErrorAndRollback(tx, err)
-		return e
-	}
-
-	//检查UserID是否为空
-	if d.UserID == 0 {
-		err = errors.New("用户ID不能为0")
+	// 调用 IsClear 函数检查输入
+	if err = dto.AisClear(d); err != nil {
 		e.handleErrorAndRollback(tx, err)
 		return e
 	}
@@ -81,7 +83,9 @@ func (e *SysGoods) AddGood(d *dto.AddGoodRequest) *SysGoods {
 			_ = e.AddError(err)
 			tx.Rollback()
 		}
+
 	}
+	Rgoods(&dto.AddGoodRequest{d.MomentID, d.UserID})
 	tx.Commit()
 
 	return e
@@ -99,16 +103,8 @@ func (e *SysGoods) CancelGood(d *dto.CancelGoodRequest) *SysGoods {
 		}
 	}()
 
-	//检查MomentID是否为空
-	if d.MomentID == 0 {
-		err = errors.New("朋友圈ID不能为0")
-		e.handleErrorAndRollback(tx, err)
-		return e
-	}
-
-	//检查UserID是否为空
-	if d.UserID == 0 {
-		err = errors.New("用户ID不能为0")
+	// 调用 IsClear 函数检查输入
+	if err = dto.CisClear(d); err != nil {
 		e.handleErrorAndRollback(tx, err)
 		return e
 	}
@@ -146,6 +142,7 @@ func (e *SysGoods) CancelGood(d *dto.CancelGoodRequest) *SysGoods {
 			tx.Rollback()
 		}
 	}
+	RremoveGoods(&dto.CancelGoodRequest{d.UserID, d.MomentID})
 	tx.Commit()
 
 	return e
