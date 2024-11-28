@@ -27,7 +27,7 @@ func (e *SysComment) CreateComment(d *dto.CreateCommentRequest) *SysComment {
 		}
 	}()
 	// 调用 CreateClear 函数检查输入
-	if err = dto.CreateClear(d); err != nil {
+	if err = dto.CreateCommentClear(d); err != nil {
 		e.handleErrorAndRollback(tx, err)
 		return e
 	}
