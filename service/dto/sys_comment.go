@@ -16,8 +16,8 @@ type DeleteCommentRequest struct {
 	Ids []int `json:"ids"`
 }
 
-// CreateClear 检查 Contents 和 UserID 和 MomentID是否都不为零
-func CreateClear(d *CreateCommentRequest) error {
+// CreateCommentClear 检查 Contents 和 UserID 和 MomentID是否都不为零
+func CreateCommentClear(d *CreateCommentRequest) error {
 	if err := ValidateContents(d.Contents); err != nil {
 		return errors.New("内容验证格式错误")
 	}

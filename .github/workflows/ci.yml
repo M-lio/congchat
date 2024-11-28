@@ -1,0 +1,27 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up your application's dependencies
+        # 这里是你的依赖安装步骤，例如使用 npm、pip、gradle 等
+
+      - name: Run your application's tests or build process
+        # 在这里，你的应用程序将能够访问 DB_PASSWORD 环境变量
+        run: |
+          echo "Database password is set to: $DB_PASSWORD"  # 注意：这只是一个示例，你不应该在日志中打印密码
+          # 你的测试或构建命令...
+
+    # ... 其他步骤，如部署到服务器或发布到某个平台

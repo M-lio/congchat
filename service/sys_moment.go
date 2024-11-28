@@ -24,23 +24,8 @@ func (e *SysMoment) CreateMoment(d *dto.CreateMomentRequest) *SysMoment {
 		}
 	}()
 
-	// 文本参数校验 查看是否符合格式
-	if err = dto.ValidateContent(d.Content); err != nil {
-		err = errors.New("内容验证错误")
-		e.handleErrorAndRollback(tx, err)
-		return e
-	}
-
-	//检验下图片的输入是否大于9张图片的处理函数
-	if err = dto.ValidateImgURLs(d.ImgURL); err != nil {
-		err = errors.New("图片验证错误")
-		e.handleErrorAndRollback(tx, err)
-		return e
-	}
-
-	// 其他参数校验，例如检查UserID是否为0（假设0是无效的用户ID）
-	if d.UserID == 0 {
-		err = errors.New("用户ID不能为0")
+	// 调用 CreateMomentClear 函数检查输入
+	if err = dto.CreateMomentClear(d); err != nil {
 		e.handleErrorAndRollback(tx, err)
 		return e
 	}
@@ -72,16 +57,8 @@ func (e *SysMoment) EditMoment(d *dto.EditMomentRequest) *SysMoment {
 		}
 	}()
 
-	// 文本参数校验 查看是否符合格式
-	if err = dto.ValidateContent(d.Content); err != nil {
-		err = errors.New("内容验证错误")
-		e.handleErrorAndRollback(tx, err)
-		return e
-	}
-
-	//检验下图片的输入是否大于9张图片的处理函数
-	if err = dto.ValidateImgURLs(d.ImgURL); err != nil {
-		err = errors.New("验证错误")
+	// 调用 CreateMomentClear 函数检查输入
+	if err = dto.EditMomentClear(d); err != nil {
 		e.handleErrorAndRollback(tx, err)
 		return e
 	}
@@ -117,9 +94,6 @@ func (e *SysMoment) GetMoment(c *dto.GetMomentRequest, list *[]model.Moment) *Sy
 			fmt.Println("Recovered in GetMoment:", r)
 		}
 	}()
-
-	// 构建查询（校验）旧代码 这里我通过传一个进来
-	//var moments []model.Moment
 
 	// 限制Limit的最大值为10
 	if c.Limit > 10 {
@@ -200,6 +174,5 @@ func (e *SysMoment) RemoveMoment(d *dto.DeleteMomentRequest) *SysMoment {
 		return e
 	}
 	tx.Commit()
-
 	return e
 }

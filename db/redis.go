@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"github.com/go-redis/redis/v8"
+	"os"
 	// 其他必要的导入
 )
 
@@ -11,10 +12,11 @@ var RedisClient *redis.Client
 var ctx = context.Background()
 
 func InitRedis() {
+	dbPassword := os.Getenv("DB_PASSWORD")
 	// 设置Redis地址和密码（如果有）
 	redisOptions := &redis.Options{
 		Addr:     "z1.juhong.live:6379", // Redis服务器地址和端口
-		Password: "52Tiananmen.",        // Redis密码（如果没有密码，可以为空）
+		Password: dbPassword,            // Redis密码（如果没有密码，可以为空）
 		DB:       0,                     // 使用默认的Redis数据库索引
 	}
 

@@ -36,7 +36,7 @@ type DeleteMomentRequest struct {
 	Ids []int `json:"ids"`
 }
 
-// 自定义验证函数，用于验证ImgURLs切片的长度不超过9
+// ValidateImgURLs 自定义验证函数，用于验证ImgURLs切片的长度不超过9
 func ValidateImgURLs(ImgURL []string) error {
 	if len(ImgURL) > 9 {
 		return errors.New("最多只能上传9张图片")
@@ -64,6 +64,38 @@ func ValidateContent(content string) error {
 		if strings.Contains(content, word) {
 			return fmt.Errorf("内容包含敏感词：%s", word)
 		}
+	}
+	return nil
+}
+
+// CreateMomentClear 检查 Contents 和 UserID 和 MomentID是否都不为零
+func CreateMomentClear(d *CreateMomentRequest) error {
+	// 文本参数校验 查看是否符合格式
+	if err := ValidateContent(d.Content); err != nil {
+		return errors.New("内容验证格式错误")
+	}
+
+	//检验下图片的输入是否大于9张图片的处理函数
+	if err := ValidateImgURLs(d.ImgURL); err != nil {
+		return errors.New("图片验证错误")
+	}
+	// 其他参数校验，例如检查UserID是否为0（假设0是无效的用户ID）
+	if d.UserID == 0 {
+		return errors.New("用户ID不能为0")
+	}
+	return nil
+}
+
+// EditMomentClear 检查 Contents 和 UserID 和 MomentID是否都不为零
+func EditMomentClear(d *EditMomentRequest) error {
+	// 文本参数校验 查看是否符合格式
+	if err := ValidateContent(d.Content); err != nil {
+		return errors.New("内容验证格式错误")
+	}
+
+	//检验下图片的输入是否大于9张图片的处理函数
+	if err := ValidateImgURLs(d.ImgURL); err != nil {
+		return errors.New("图片验证错误")
 	}
 	return nil
 }
