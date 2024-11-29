@@ -4,7 +4,10 @@ import (
 	"congchat-user/db"
 	"congchat-user/model"
 	"congchat-user/service/dto"
+	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 )
 
 type SysUser struct {
@@ -21,14 +24,28 @@ func (e *SysUser) GetUser(d *dto.GetUserRequest) *SysUser {
 		return e
 	}
 
-	db.Db.First(&user, d.UserID)
+	result := db.Db.First(&user, d.UserID)
+	if result.Error != nil {
+		return e // 返回一个空的 SysUser 实例
+	}
 
-	if user.ID == 0 {
-		err = errors.New("用户ID不能为0")
-		e.handleErrorAndRollback(db.Db, err)
+	userKey := fmt.Sprintf("user:%d", d.UserID)
+
+	// 将用户信息序列化并存储到 Redis 中
+	userData, err := json.Marshal(user)
+	if err != nil {
+		// 序列化失败，返回“空”的 SysUser 实例
+		// 注意：这里可以记录日志或执行其他错误处理逻辑
 		return e
 	}
 
+	// 设置 Redis 键值对，没有设置过期时间
+	_, err = db.RedisClient.Set(context.Background(), userKey, userData, 0).Result()
+	if err != nil {
+		// Redis 存储失败，返回“空”的 SysUser 实例
+		// 注意：这里可以记录日志、执行重试逻辑或向监控系统报告错误
+		return e
+	}
 	return e
 }
 
@@ -82,6 +99,18 @@ func (e *SysUser) UpdateUser(d *dto.UpdateUserRequest) *SysUser {
 	//更新数据库中的用户信息
 	if err = db.Db.Model(&model.User{}).Where("id = ?", d.UserID).Updates(user).Error; err != nil {
 		err = errors.New("更新用户信息时发生错误")
+		return e
+	}
+
+	userKey := fmt.Sprintf("user:%d", d.UserID)
+	userData, err := json.Marshal(user)
+	if err != nil {
+		err = errors.New("序列化用户数据时发生错误")
+		return e
+	}
+	_, err = db.RedisClient.Set(context.Background(), userKey, userData, 0).Result() // 0表示没有设置过期时间
+	if err != nil {
+		err = errors.New("更新Redis用户信息时发生错误")
 		return e
 	}
 	return e
