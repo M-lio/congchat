@@ -103,7 +103,7 @@ func (e SysUser) GetFriends(c *gin.Context) {
 		return
 	}
 
-	var user model.User
+	var FList model.FriendshipStatusList
 	err := s.GetFriends(&req).Error
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -111,7 +111,7 @@ func (e SysUser) GetFriends(c *gin.Context) {
 	}
 
 	rsp.Code = 0
-	rsp.Data = user
+	rsp.Data = FList
 	rsp.Msg = "获取好友列表成功"
 	c.JSON(http.StatusOK, rsp)
 }
@@ -150,4 +150,4 @@ func GetFriendsHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, friendStatuses)
 }
-*/ //GetFriends 获取好友列表旧代码
+*///GetFriends 获取好友列表旧代码
