@@ -32,6 +32,7 @@ func InitDB() {
 
 	// 自动迁移模式，确保 用户User存在
 	err = Db.AutoMigrate(&model.User{})
+	err = Db.AutoMigrate(&model.Transfer{})
 	err = Db.AutoMigrate(&model.Friendship{})
 	//err = Db.AutoMigrate(&model.Moment{})
 	err = Db.AutoMigrate(&model.Goods{})
